@@ -93,7 +93,7 @@ class VplParser:
   reserved = {'test': 'TEST', 'case': 'CASE', 'grade_reduction':'GRADERED', 	      'files':'FILES', 'weight':'WEIGHT', 'input':'INPUT','output':'OUTPUT',
 	      'hint':'HINT', 'generator':'GENERATOR', 'type':'TYPE',
               'dialog':'DIALOG','build':'BUILD', 'timeout':'TIMEOUT',
-              'info':'INFO'}
+              'info':'INFO', 'parent':'PARENT'}
 
   tokens = (
     'COLON','LBRACE', 'RBRACE','EQUALS','NUMBER', 'VIRG',
@@ -333,6 +333,10 @@ class VplParser:
       n = int(p[3])*.01
       p[0] = {p[1]: n}
 
+  def p_attr_decl4(self, p):
+      r'''attr : PARENT EQUALS caseid'''
+      p[0] = {p[1]: p[3]}
+
   def p_dialog_decl1(self, p):
       'dialog : DIALOG LBRACE commonlist RBRACE'
       p[0] = Dialog(p[3])
@@ -351,7 +355,7 @@ class VplParser:
 
   def p_commonattr_decl1(self, p):
       'commonattr : OUTPUT EQUALS OUTPUTFILE'
-      p[0] = (p[1], File(p[3]))
+      p[0] = (p[1], open(p[3]).read())
 
   def p_commonattr_decl2(self, p):
       'commonattr : OUTPUT EQUALS multi'

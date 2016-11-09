@@ -73,7 +73,7 @@ class Case(Base):
   Kind = 'case'
 
   def __init__(self, name, attrs={}):
-    Base.__init__(self, name, {'info':'', 'timeout': 30, 'hint': ''})    
+    Base.__init__(self, name, {'info':'', 'timeout': 30, 'hint': '', 'parent':None})    
     self.attrs.update(attrs)
     self.__check_dialogs__()
 
@@ -113,6 +113,9 @@ class Case(Base):
       except:
         raise AttributeError(k)
 
+  def __repr__(self):
+    return '<case %s: parent=%s>' % (self.name, self.parent)
+
 class BasicTest(Base):
 
   Timeout=30
@@ -121,7 +124,16 @@ class BasicTest(Base):
   def __init__(self, name, attrs={}):
     Base.__init__(self, name, {'weight':1, 'timeout':0})
     self.attrs.update(attrs)
-    
+    self.__setcases__()
+    #print(self.cases)
+
+  def __setcases__(self):
+    tab = {}
+    for c in self.cases:    
+      tab[c.name] = c
+    for c in self.cases:
+      if c.parent: c.parent = tab[c.parent]
+
   def __repr__(self):
 #    return 'TestSuite "%s": %s' % (self.name, self.attrs)
     return 'TestSuite "%s" (%s): %s' % (self.name, self.type, self.attrs)
