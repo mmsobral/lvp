@@ -115,21 +115,9 @@ class Dialog:
     else:
       self.timeout = timeout
 
-  def __readsome__(self, fd, timeout):
-    r,w,e = select.select([fd],[],[], timeout)
-    if not r: return ''
-    # talvez aqui por fd nonblock e ler uma linha
-    # ou em check_output bufferizar o conte√do em excesso
-    # ou fazer strip a cada etapa de verifica√√£o de check_outpu
-    r = fd.read1(self.MaxLine)
-    try:
-      r = r.decode('ascii')
-    except UnicodeDecodeError:
-      r = r.decode('utf8')
-    return r
-
   def __check_output__(self, data):
     outp = self.dial.output
+    #print('check_output:', type(outp))
     if outp:
       resto = outp.check(data)
     else:
@@ -141,45 +129,6 @@ class Dialog:
     #return resto.strip() == ''
     n = len(data) - len(resto)
     return n
-
-  def run1(self, proc):
-    self.sent = ''
-    self.rcvd = ''
-    if self.dial.output != None: self.expected = repr(self.dial.output)
-    else: self.expected = ''
-    #print('run_dialog: tx=%s, rx=%s' % (self.dial.input,self.dial.output))
-    if self.dial.input != None:
-      inp = self.dial.input+'\n'
-      self.sent += inp
-      proc.stdin.write(inp.encode('ascii'))
-      proc.stdin.flush()
-    # se output for None, entao programa em avaliacao nada deve apresentar na saida
-    # define um timeout pequeno para conferir se o programa apresenta algo na saida
-    if self.dial.output == None:
-      tout = 2
-    else:
-      tout = self.timeout
-    r = ''
-    ok = False
-    while True:
-        t0 = time.time()
-        rout = self.__readsome__(proc.stdout, tout)
-        #print('...', rout, len(rout))
-        tout -= (time.time()-t0)
-        # se ocorreu timeout ...
-        if not rout: 
-          # retorna verdadeiro se nada foi apresentado pelo programa
-          # e output for None.
-          return r == '' and self.dial.output == None
-        r += rout
-        self.rcvd += r
-        ok = self.__check_output__(r)
-        if ok: return True
-        elif tout <= 0: 
-          # se ocorreu timeout:
-          # retorna verdadeiro se nada foi apresentado pelo programa
-          # e output for None.
-          return r == '' and self.dial.output == None
 
   def run(self, outfd, infd):
     self.sent = ''
@@ -217,7 +166,7 @@ class Dialog:
           rout = infd.data
         if self.dial.output != None: 
           ok = self.__check_output__(rout)
-          print('... ok=%d', ok)
+          print('... ok=%d'% ok)
           if ok > 0:
             self.rcvd = rout[:ok]
             infd.flush(ok) 
