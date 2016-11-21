@@ -1,4 +1,4 @@
-import sys,re,subprocess,select
+import sys,regex as re,subprocess,select
 from .evaluator import Evaluator
 import time
 
@@ -9,6 +9,7 @@ class Result:
 
   def __init__(self, data):
     m = self.Expr.search(data)
+    self.errpos = 0
     if m:
       data = m.groups()[0]
       self.data = self.__normalize__(data.strip())
@@ -29,7 +30,30 @@ class Result:
     if m:
       data = data[m.end()+1:]
       return data
+    else:
+      self.__partial_match__(data)
     return None
+
+
+  def __partial_match__(self, data):
+    n = len(data)
+    self.errpos = 0
+    while n > 1:
+      m = self.expr.match(data[:self.errpos], partial=True)
+      n1 = n //2
+      n2 = n - n1
+      n = max(n1, n2)
+      if not m: 
+        self.errpos -= n1
+      elif not m.partial: break
+      else: self.errpos += n1
+
+  def __partial_match0__(self, data):
+    while self.errpos < len(data):
+      m = self.expr.match(data[:self.errpos+1], partial=True)
+      if not m: break
+      if not m.partial: break
+      self.errpos += 1
 
   def __normalize__(self, data):
     data = map(re.escape, data.split())
@@ -133,9 +157,10 @@ class Dialog:
   def run(self, outfd, infd):
     self.sent = ''
     self.rcvd = ''
+    self.errpos = 0 
     if self.dial.output != None: self.expected = repr(self.dial.output)
     else: self.expected = ''
-    print('run_dialog: tx=%s, rx=%s, timeout=%d' % (self.dial.input,self.expected, self.timeout))
+    #print('run_dialog: tx=%s, rx=%s, timeout=%d' % (self.dial.input,self.expected, self.timeout))
     if self.dial.input != None:
       inp = self.dial.input+'\n'
       self.sent += inp
@@ -154,19 +179,24 @@ class Dialog:
         try:
           t0 = time.time()
           rout = infd.read(tout)
-          print('...', rout, len(rout))
+          #print('...', rout, len(rout))
           tout -= (time.time()-t0)
         except Exception:
           # se ocorreu timeout ...
           # retorna verdadeiro se nada foi apresentado pelo programa
           # e output for None.
           self.rcvd = infd.data
-          if infd.data == '': return self.dial.output == None
-          elif rout == infd.data: return False
+          if infd.data == '': 
+            ok = self.dial.output == None
+            return ok
+          elif rout == infd.data: 
+            self.errpos = self.dial.output.errpos
+            #print('errpos:', self.errpos)
+            return False
           rout = infd.data
         if self.dial.output != None: 
           ok = self.__check_output__(rout)
-          print('... ok=%d'% ok)
+          #print('... ok=%d'% ok)
           if ok > 0:
             self.rcvd = rout[:ok]
             infd.flush(ok) 
@@ -179,40 +209,11 @@ class Dialog:
             return False
         else:
           self.rcvd = rout
+          # Aqui deve-se identificar a posicao do erro,
+          # em que a saida do programa diverge do esperado
           return False  
     return True
 
-  def run0(self, proc):
-    self.sent = ''
-    self.rcvd = ''
-    self.expected = repr(self.dial.output)
-    if self.dial.input != None:
-      #print('run_dialog: tx=%s' % self.dial.input)
-      inp = self.dial.input+'\n'
-      self.sent += inp
-      proc.stdin.write(inp.encode('ascii'))
-      proc.stdin.flush()
-    if self.dial.output != None:
-      #data = self.__check_output__('0.00')
-      #print('run_dialog: rx=', data, self.dial.output)
-      r = ''
-      tout = self.timeout
-      ok = False
-      while True:
-        t0 = time.time()
-        rout = self.__readsome__(proc.stdout, tout)
-        tout -= (time.time()-t0)
-        if not rout: 
-          #print('...',ok,r, '-->',self.dial.output)
-          return False
-        r += rout
-        self.rcvd += r
-        ok = self.__check_output__(r)
-        #print('===',ok,r, '-->',self.dial.output)
-        if ok: return True
-        elif tout <= 0: return False
-    return True
-    
 
 class Case:
 
@@ -313,6 +314,7 @@ class Case:
     self.data_sent = ''
     self.data_rcvd = ''
     self.expected = ''
+    self.errpos = -1 
     #print(self.dialogs)
     infd = Reader(proc.stdout)
     while self.curr_dialog < len(self.dialogs):
@@ -323,6 +325,7 @@ class Case:
         self.data_rcvd += dial.rcvd
         self.expected += dial.expected
         if not ok:
+          self.errpos = dial.errpos
           break
       except BrokenPipeError:
         print('oopss')
@@ -404,22 +407,13 @@ class DefaultEvaluator(Evaluator):
             #subres[caso.name] = caso.reduction
             result[caso.name]['text'] = caso.get_hint_data()
             result[caso.name]['reduction'] = caso.reduction
+            result[caso.name]['errpos'] = caso.errpos
           #elif caso.parent: subres[caso.parent.name] -= caso.reduction
       parents = lpar
     #for name in subres:
     #  result[name]['reduction'] = min(subres[name], 0)
     return result
 
-  def __run0__(self, prog):
-    result = {}
-    for caso in self.cases:
-      succ = caso.run([prog], self.timeout)
-      result[caso.name] = {'success': succ, 'info': caso.info, 'input':caso.data_sent,
-                           'output':caso.data_rcvd, 'expected': caso.expected}
-      if not succ:
-        result[caso.name]['text'] = caso.get_hint_data()
-        result[caso.name]['reduction'] = caso.reduction
-    return result
 #####################################################
 def init(test, **args):
   fac = DefaultEvaluator(test, **args)

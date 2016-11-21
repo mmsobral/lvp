@@ -61,16 +61,19 @@ class CxxEvaluator(Evaluator):
       t1 = time.time()
       r = Evaluator.__run__(self, program)
       self.timeout = global_timeout
-      if r:
-        result.update(self.__check_output__(r, case))
-      else:
-        t2 = time.time()
-        tname = '%s' % test[1]
-        result[tname] = {'success': False, 'reduction': case.grade_reduction, 'info':case.info}
-        if t2-t1 >= test_timeout:
-           result[tname]['text'] = 'Timeout !'
+      try:
+        if r:
+          result.update(self.__check_output__(r, case))
         else:
-           result[tname]['text'] = 'Algum erro fatal ...'
+          raise Exception()
+      except Exception as e:
+          t2 = time.time()
+          tname = '%s' % test[1]
+          result[tname] = {'success': False, 'reduction': case.grade_reduction, 'info':case.info}
+          if t2-t1 >= test_timeout:
+             result[tname]['text'] = 'Timeout !'
+          else:
+             result[tname]['text'] = 'Algum erro fatal: ' + r
           
     return result
 
