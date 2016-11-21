@@ -648,9 +648,9 @@
 					      if (reg.length > 0) {
 						reg = reg.replace(/\\n/g,'<br>');
 					        res = res + '<tr><th>'+case_info[j]+'</th>';
-						if ((errpos) and (j == "output")) {
-							var s1 = reg.slice(0,errpos);		
-							var s2 = reg.slice(errpos);
+						if ((errpos) && (j == 'output')) {
+							var s1 = reg.slice(0,casos[data]['errpos']);		
+							var s2 = reg.slice(casos[data]['errpos']);
 							reg = s1+'<span style="color:red">'+s2+'</span>';
 						}		
 					        res = res + '<td style="max-width: 180px;word-wrap:break-word">'+reg+'</td></tr>';
