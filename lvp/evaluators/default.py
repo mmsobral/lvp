@@ -47,6 +47,7 @@ class Result:
         self.errpos -= n1
       elif not m.partial: break
       else: self.errpos += n1
+    self.errpos -= 1
 
   def __partial_match0__(self, data):
     while self.errpos < len(data):
@@ -317,6 +318,7 @@ class Case:
     self.errpos = -1 
     #print(self.dialogs)
     infd = Reader(proc.stdout)
+    len_rcvd = 0
     while self.curr_dialog < len(self.dialogs):
       try:
         dial = Dialog(self.dialogs[self.curr_dialog], timeout)
@@ -325,8 +327,10 @@ class Case:
         self.data_rcvd += dial.rcvd
         self.expected += dial.expected
         if not ok:
-          self.errpos = dial.errpos
+          self.errpos = dial.errpos + len_rcvd
+          #print('len=%d, errpos=%d, rcvd=%d: %d, %s' % (len(self.data_rcvd),dial.errpos, len_rcvd, self.errpos, self.data_rcvd[self.errpos-2:self.errpos+20]))
           break
+        len_rcvd = len(self.data_rcvd)
       except BrokenPipeError:
         print('oopss')
         return False

@@ -645,15 +645,18 @@
 					    var errpos = casos[data].hasOwnProperty('errpos');
 					    for (j in case_info) {
                                               var reg = casos[data][j];
+					      reg = reg.replace(/\r\n/mg, '\n');
+					      //var rsize = reg.length.toString();
 					      if (reg.length > 0) {
-						reg = reg.replace(/\\n/g,'<br>');
-					        res = res + '<tr><th>'+case_info[j]+'</th>';
+					        res = res + '<tr><th>'+case_info[j]+'</th>';						
 						if ((errpos) && (j == 'output')) {
-							var s1 = reg.slice(0,casos[data]['errpos']);		
-							var s2 = reg.slice(casos[data]['errpos']);
+							var s1 = sanitizeText(reg.slice(0,casos[data]['errpos']));		
+							var s2 = sanitizeText(reg.slice(casos[data]['errpos']));
 							reg = s1+'<span style="color:red">'+s2+'</span>';
-						}		
-					        res = res + '<td style="max-width: 180px;word-wrap:break-word">'+reg+'</td></tr>';
+						} else {
+						  reg = sanitizeText(reg);
+                                                }
+					        res = res + '<td style="max-width: 180px;word-wrap:break-word">'+ reg+'</td></tr>';
 					      }
 					    }
 					    res = res + '</table></div></td></tr>';
@@ -674,6 +677,7 @@
 					  }
 					  res = res + '</div><br>';
 					}*/
+					res = res.replace(/\n/mg,'<br>');
 					return res;
 					function genCol(data, index) {
 						test = obj[data]
@@ -686,7 +690,7 @@
 					return res;
 				}
 				function addComment(rawline) {
-					var line = sanitizeText(rawline);
+					//var line = sanitizeText(rawline);
 					comment += genFileLinks(line,rawline) + '<br />';
 				}
 				function addCase(rawline) {
