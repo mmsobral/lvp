@@ -609,6 +609,7 @@
 				function getComment() {
 					lastAnotation=false;
 					var ret = comment;
+					var orig = comment;
 					comment = '';
 					while (! ret.endsWith("}") && ret.length > 0) {
 						ret = ret.substr(0,ret.length-1);
@@ -616,7 +617,7 @@
 					try {
 						obj = JSON.parse(ret);
 					} catch (e) {
-						return ret;
+						return orig;
 					}
 					var res = '';
 					var ncase = 1;
