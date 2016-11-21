@@ -642,11 +642,17 @@
                                             // gera a tabela com a descricao do caso de teste
 					    res = res + '<tr data-toggle="collapse" data-target="#caso'+ncase+'"><td>'+data+'</td><td>'+status+'</td><td>'+nota+'</td></tr>';
 					    res = res + '<tr><td colspan=20 class="hiddenRow"><div class="accordian-body collapse" id=caso'+ncase+'><table class="table table-striped">';
+					    var errpos = casos[data].hasOwnProperty('errpos');
 					    for (j in case_info) {
                                               var reg = casos[data][j];
 					      if (reg.length > 0) {
 						reg = reg.replace(/\\n/g,'<br>');
 					        res = res + '<tr><th>'+case_info[j]+'</th>';
+						if ((errpos) and (j == "output")) {
+							var s1 = reg.slice(0,errpos);		
+							var s2 = reg.slice(errpos);
+							reg = s1+'<span style="color:red">'+s2+'</span>';
+						}		
 					        res = res + '<td style="max-width: 180px;word-wrap:break-word">'+reg+'</td></tr>';
 					      }
 					    }
