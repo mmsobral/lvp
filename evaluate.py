@@ -26,7 +26,7 @@ class Aggregator(Evaluator):
       module = importlib.import_module(name)
     return module
 
-  def __run_test__(self, test):
+  def __run_test0__(self, test):
     try:
       module = self.__load_module__(test.type)
       test.generate()
@@ -42,6 +42,15 @@ class Aggregator(Evaluator):
       print(e)
       traceback.print_exc()
       return None
+
+  def __run_test__(self, test):
+      module = self.__load_module__(test.type)
+      test.generate()
+      #runner = module.init(test, timeout=Timeout)
+      runner = module.init(test)
+      runner.compile()
+      runner.evaluate()
+      return runner
 
   def __sum_weights__(self, suites):
     s = 0
@@ -71,14 +80,9 @@ class Aggregator(Evaluator):
       self.result[test.name] = res
     return self.grade
 
-  def report0(self):
-    r = ''
-    for test,res in self.result.items():
-      r += '<|--\n- Start of test: %s\n\n' % test
-      r += res.report()
-      r += '\n- End of test %s\n--|>\n' % test
-    r += 'Grade :=>> %.2f\n' % self.grade
-    r += ''
+  def error_report(self, e):
+    r = '<|--\n- Erro: %s\n\n' % str(e) 
+    r += '\n--|>\n'
     return r
 
   def report(self):
@@ -112,7 +116,7 @@ if __name__ == '__main__':
   try:
     obj.evaluate()
   except Exception as e:
-    print('Falha na avaliacao: %s' % repr(e))
+    print(obj.error_report(e))
     #print(traceback.format_exc())
     print('Grade :=>> 0.00')
     sys.exit(0)

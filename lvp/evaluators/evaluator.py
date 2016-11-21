@@ -71,7 +71,7 @@ class Evaluator:
       return 1
     if err:
       err = err.decode('utf-8')
-      print('<|--\n- Erro\n%s\n--|>' % err)
+      print('<|--\n%s\n--|>' % err)
       return 1
     return 0
 
