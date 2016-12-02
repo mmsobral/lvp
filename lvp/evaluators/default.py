@@ -325,7 +325,7 @@ class Case:
         ok = dial.run(proc.stdin,infd)
         self.data_sent += dial.sent
         self.data_rcvd += dial.rcvd
-        self.expected += dial.expected
+        self.expected += dial.expected+'\n'
         if not ok:
           self.errpos = dial.errpos + len_rcvd
           #print('len=%d, errpos=%d, rcvd=%d: %d, %s' % (len(self.data_rcvd),dial.errpos, len_rcvd, self.errpos, self.data_rcvd[self.errpos-2:self.errpos+20]))
