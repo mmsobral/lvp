@@ -81,7 +81,7 @@ class CxxEvaluator(Evaluator):
     r = ET.fromstring(data)
     result = {}
     for test in r:
-      tname = test.attrib['name']
+      tname = test.attrib['name'][4:]
       result[tname] = {'success': True, 'text': '', 'info':case.info}
       if test.tag == 'testcase':
         for res in test:
