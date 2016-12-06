@@ -68,7 +68,7 @@ class CxxEvaluator(Evaluator):
           raise Exception()
       except Exception as e:
           t2 = time.time()
-          tname = '%s' % test[1]
+          tname = '%s' % test[1][4:]
           result[tname] = {'success': False, 'reduction': case.grade_reduction, 'info':case.info}
           if t2-t1 >= test_timeout:
              result[tname]['text'] = 'Timeout !'
