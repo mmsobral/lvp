@@ -99,40 +99,50 @@ class Evaluator:
     except:
       self.result[key][attr]=''
 
-  def __getcases__(self, cases, parent=None):
-    return list(filter(lambda caso: caso.parent == parent, cases))
+  def __getcases__(self, caselist, parent=None):
+    'get list of cases that have parent given by parameter parent'
+    return list(filter(lambda caso: caso.parent == parent, caselist))
 
   def __getcases_req__(self, req=None):
+    'get list of cases that have requsite given by parameter req'
     return list(filter(lambda caso: req in caso.requisite, self.cases))
 
   def __runcase__(self, caso, prog):
+    'execute a specific case: this method must be overwritten by derived classes'
     #print("--caso:%s, parent=%s:" % (caso.name, caso.parent))
     result[caso.name] = {'success': true, 'info': caso.info}
     return result
 
   def __runcases__(self, prog):
+    'Execute all cases of this test, taking care of case requisites and case parents'
     result = {}
-    #subres = {}
-    lcases = self.__getcases_req__()    
+    # get all cases with no requisites
+    lcases = self.__getcases_req__()  
+    # while there are cases to execute
     while lcases:
+      # initiate list of parents
       parents = [None]
+      # while there are parents that failed to execute
       while parents:
         lpar = []
         for parent in parents:
           #print("parent:", parent)
+          # for each case that depends on failure of a parent
           for caso in self.__getcases__(lcases, parent):
+            # run this specific case
             res = self.__runcase__(caso, prog)
             result.update(res)
+            # if case failed, add it to parent list, otherwise
+            # extend case list with cases that has this case as requisite
             if not res['success']: lpar.append(caso.name)
             else: lcases += self.__getcases_req__(caso.name)
+            # remove case from case list, since it was already executed
             lcases.remove(caso)
-            #elif caso.parent: subres[caso.parent.name] -= caso.reduction
         parents = lpar
-      #for name in subres:
-      #  result[name]['reduction'] = min(subres[name], 0)
     return result
 
   def run(self,prog='./vpl_test'):
+    'run this evaluator'
     self.result = self.__runcases__(prog)
     for case in self.result:
       self.__check_key__(case, 'input')
