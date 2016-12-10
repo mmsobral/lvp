@@ -110,14 +110,15 @@ class Evaluator:
   def __runcase__(self, caso, prog):
     'execute a specific case: this method must be overwritten by derived classes'
     #print("--caso:%s, parent=%s:" % (caso.name, caso.parent))
-    result[caso.name] = {'success': true, 'info': caso.info}
+    result[caso.name] = {'success': False, 'info': caso.info, 'reduction': caso.grade_reduction}
     return result
 
   def __runcases__(self, prog):
     'Execute all cases of this test, taking care of case requisites and case parents'
     result = {}
     # get all cases with no requisites
-    lcases = self.__getcases_req__()  
+    lcases = self.__getcases_req__()
+    cases = self.cases[:]  
     # while there are cases to execute
     while lcases:
       # initiate list of parents
@@ -134,11 +135,15 @@ class Evaluator:
             result.update(res)
             # if case failed, add it to parent list, otherwise
             # extend case list with cases that has this case as requisite
-            if not res['success']: lpar.append(caso.name)
+            if not res[case.name]['success']: lpar.append(caso.name)
             else: lcases += self.__getcases_req__(caso.name)
             # remove case from case list, since it was already executed
             lcases.remove(caso)
+            cases.remove(caso)
         parents = lpar
+    for c in cases:
+      if not c.parent:
+       result[c.name] = {'success':False, 'reduction':c.grade_reduction, 'info':c.info, 'hint': 'not executed because some of its requisites failed: '+','.join(c.requisite)}
     return result
 
   def run(self,prog='./vpl_test'):
