@@ -99,8 +99,41 @@ class Evaluator:
     except:
       self.result[key][attr]=''
 
+  def __getcases__(self, cases, parent=None):
+    return list(filter(lambda caso: caso.parent == parent, cases))
+
+  def __getcases_req__(self, req=None):
+    return list(filter(lambda caso: req in caso.requisite, self.cases))
+
+  def __runcase__(self, caso, prog):
+    #print("--caso:%s, parent=%s:" % (caso.name, caso.parent))
+    result[caso.name] = {'success': true, 'info': caso.info}
+    return result
+
+  def __runcases__(self, prog):
+    result = {}
+    #subres = {}
+    lcases = self.__getcases_req__()    
+    while lcases:
+      parents = [None]
+      while parents:
+        lpar = []
+        for parent in parents:
+          #print("parent:", parent)
+          for caso in self.__getcases__(lcases, parent):
+            res = self.__runcase__(caso, prog)
+            result.update(res)
+            if not res['success']: lpar.append(caso.name)
+            else: lcases += self.__getcases_req__(caso.name)
+            lcases.remove(caso)
+            #elif caso.parent: subres[caso.parent.name] -= caso.reduction
+        parents = lpar
+      #for name in subres:
+      #  result[name]['reduction'] = min(subres[name], 0)
+    return result
+
   def run(self,prog='./vpl_test'):
-    self.result = self.__run__(prog)
+    self.result = self.__runcases__(prog)
     for case in self.result:
       self.__check_key__(case, 'input')
       self.__check_key__(case, 'output')
@@ -117,26 +150,6 @@ class Evaluator:
 
   def get_result(self):
     return self.result
-
-  def report0(self):
-    r = ''
-    for caso,status in self.result.items():
-      info = status['info']
-      if info: info = '(%s)' % info
-      if status['success']:
-        r += '*** %s %s\n' % (caso, info)
-    if r: 
-      r = '- Succeeded tests\n' + r
-    rf = ''
-    for caso,status in self.result.items():
-      info = status['info']
-      if info: info = '(%s)' % info
-      if not status['success']:
-        rf += '*** %s %s: %s\n\n' % (caso, info,status['text'])
-    if rf:
-      r += '- Failed tests\n' + rf 
-    r += '\n- Partial Grade: %.2f\n' % self.grade()
-    return r
 
   def report(self):
     res= json.dumps(self.result)

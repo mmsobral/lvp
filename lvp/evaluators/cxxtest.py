@@ -15,6 +15,7 @@ class CxxEvaluator(Evaluator):
     self.cases = test.cases
     self.name = test.name
     self.timeout = test.timeout
+    self.tlist = []
     self.__find_test__(test.name)
     try:
       self.files = test.files
@@ -32,48 +33,42 @@ class CxxEvaluator(Evaluator):
     raise ValueError('test file for test suite %s not found' % name)
 
   def __list_tests__(self, prog):
+    if self.tlist: return self.tlist
     prog = prog + ['--help-tests']
     r = Evaluator.__run__(self, prog)
     r = r.split('\n')[2:]
-    res = []
     for test in r:
       test = test.split()
-      if test[0] == self.name: res.append(test)
-    return res
-    
-  def __run__(self,prog):
-    #if type(prog) == type([]): prog.append('-v')
-    #else: prog = [prog, '-v']
+      if test[0] == self.name: self.tlist.append(test[1][4:])
+    return self.tlist
+
+  def __runcase__(self, case, prog):
     if type(prog) == type([]): pass
     else: prog = [prog]
     result = {}
-    for test in self.__list_tests__(prog):
-      cname = test[1][4:]
-      case = self.__get_case__(cname)
-      if not case:
-        continue
-      program = prog + test
-      global_timeout = self.timeout
-      if case.timeout > 0 and case.timeout < self.timeout:
-        self.timeout = case.timeout
-      test_timeout = self.timeout
-      #print('timeout:', self.timeout, global_timeout)
-      t1 = time.time()
-      r = Evaluator.__run__(self, program)
-      self.timeout = global_timeout
-      try:
-        if r:
-          result.update(self.__check_output__(r, case))
+    if not case.name in self.__list_tests__(prog): return result
+    program = prog + [self.name, 'test%s' % test]
+    global_timeout = self.timeout
+    if case.timeout > 0 and case.timeout < self.timeout:
+      self.timeout = case.timeout
+    test_timeout = self.timeout
+    #print('timeout:', self.timeout, global_timeout)
+    t1 = time.time()
+    r = Evaluator.__run__(self, program)
+    self.timeout = global_timeout
+    try:
+      if r:
+        result.update(self.__check_output__(r, case))
+      else:
+        raise Exception()
+    except Exception as e:
+        t2 = time.time()
+        tname = '%s' % test[1][4:]
+        result[tname] = {'success': False, 'reduction': case.grade_reduction, 'info':case.info}
+        if t2-t1 >= test_timeout:
+           result[tname]['text'] = 'Timeout !'
         else:
-          raise Exception()
-      except Exception as e:
-          t2 = time.time()
-          tname = '%s' % test[1][4:]
-          result[tname] = {'success': False, 'reduction': case.grade_reduction, 'info':case.info}
-          if t2-t1 >= test_timeout:
-             result[tname]['text'] = 'Timeout !'
-          else:
-             result[tname]['text'] = 'Algum erro fatal: ' + r
+           result[tname]['text'] = 'Algum erro fatal: ' + r
           
     return result
 

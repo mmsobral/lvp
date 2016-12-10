@@ -93,7 +93,7 @@ class VplParser:
   reserved = {'test': 'TEST', 'case': 'CASE', 'grade_reduction':'GRADERED', 	      'files':'FILES', 'weight':'WEIGHT', 'input':'INPUT','output':'OUTPUT',
 	      'hint':'HINT', 'generator':'GENERATOR', 'type':'TYPE',
               'dialog':'DIALOG','build':'BUILD', 'timeout':'TIMEOUT',
-              'info':'INFO', 'parent':'PARENT'}
+              'info':'INFO', 'parent':'PARENT','requisite':'REQUISITE'}
 
   tokens = (
     'COLON','LBRACE', 'RBRACE','EQUALS','NUMBER', 'VIRG',
@@ -336,6 +336,19 @@ class VplParser:
   def p_attr_decl4(self, p):
       r'''attr : PARENT EQUALS caseid'''
       p[0] = {p[1]: p[3]}
+
+  def p_attr_decl5(self, p):
+      r'''attr : REQUISITE EQUALS caselist'''
+      p[0] = {p[1]: p[3]}
+
+  def p_caselist_decl1(self, p):
+      r'''caselist : caseid VIRG caselist'''
+      p[3] = [p[1]] + p[3]
+      p[0] = p[3]
+
+  def p_caselist_decl2(self, p):
+      r'''caselist : caseid'''
+      p[0] = p[1]
 
   def p_dialog_decl1(self, p):
       'dialog : DIALOG LBRACE commonlist RBRACE'

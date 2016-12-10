@@ -73,7 +73,7 @@ class Case(Base):
   Kind = 'case'
 
   def __init__(self, name, attrs={}):
-    Base.__init__(self, name, {'info':'', 'timeout': 30, 'hint': '', 'parent':None})    
+    Base.__init__(self, name, {'info':'', 'timeout': 30, 'hint': '', 'parent':None, 'requisite':[None]})    
     self.attrs.update(attrs)
     self.__check_dialogs__()
 
@@ -112,6 +112,12 @@ class Case(Base):
         return self.__dict__[k]
       except:
         raise AttributeError(k)
+
+  def __eq__(self, caso):
+    return self.name == caso.name
+
+  def __ne__(self, caso):
+    return self.name != caso.name
 
   def __repr__(self):
     return '<case %s: parent=%s>' % (self.name, self.parent)
