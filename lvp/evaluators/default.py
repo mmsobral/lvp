@@ -392,39 +392,12 @@ class DefaultEvaluator(Evaluator):
     result = {}
     caso = self.__loadcase__(case)
     succ = caso.run([prog], self.timeout)
-    result[caso.name] = {'success': succ, 'info': caso.info, 'input':caso.data_sent,
+    result = {'success': succ, 'info': caso.info, 'input':caso.data_sent,
                            'output':caso.data_rcvd, 'expected': caso.expected}
     if not succ:
-      #subres[caso.name] = caso.reduction
-      result[caso.name]['text'] = caso.get_hint_data()
-      result[caso.name]['reduction'] = caso.reduction
-      result[caso.name]['errpos'] = caso.errpos
-    #elif caso.parent: subres[caso.parent.name] -= caso.reduction
-    return result
-
-  def __runcases0__(self, prog):
-    result = {}
-    #subres = {}
-    parents = [None]
-    while parents:
-      lpar = []
-      for parent in parents:
-        #print("parent:", parent)
-        for caso in self.__getcases__(parent):
-          #print("--caso:%s, parent=%s:" % (caso.name, caso.parent))
-          succ = caso.run([prog], self.timeout)
-          result[caso.name] = {'success': succ, 'info': caso.info, 'input':caso.data_sent,
-                           'output':caso.data_rcvd, 'expected': caso.expected}
-          if not succ:
-            lpar.append(caso)
-            #subres[caso.name] = caso.reduction
-            result[caso.name]['text'] = caso.get_hint_data()
-            result[caso.name]['reduction'] = caso.reduction
-            result[caso.name]['errpos'] = caso.errpos
-          #elif caso.parent: subres[caso.parent.name] -= caso.reduction
-      parents = lpar
-    #for name in subres:
-    #  result[name]['reduction'] = min(subres[name], 0)
+      result['text'] = caso.get_hint_data()
+      result['reduction'] = caso.reduction
+      result['errpos'] = caso.errpos
     return result
 
 #####################################################

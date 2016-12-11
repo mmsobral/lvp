@@ -63,12 +63,11 @@ class CxxEvaluator(Evaluator):
         raise Exception()
     except Exception as e:
         t2 = time.time()
-        tname = '%s' % test[1][4:]
-        result[tname] = {'success': False, 'reduction': case.grade_reduction, 'info':case.info}
+        result = {'success': False, 'reduction': case.grade_reduction, 'info':case.info}
         if t2-t1 >= test_timeout:
-           result[tname]['text'] = 'Timeout !'
+           result[text'] = 'Timeout !'
         else:
-           result[tname]['text'] = 'Algum erro fatal: ' + r
+           result['text'] = 'Algum erro fatal: ' + r
           
     return result
 
@@ -77,32 +76,21 @@ class CxxEvaluator(Evaluator):
     result = {}
     for test in r:
       tname = test.attrib['name'][4:]
-      result[tname] = {'success': True, 'text': '', 'info':case.info}
+      if tname != case.name: continue
+      result = {'success': True, 'text': '', 'info':case.info}
       if test.tag == 'testcase':
         for res in test:
           if res.tag == 'trace':
-            result[tname]['text'] += '%s\n' % res.text
+            result['text'] += '%s\n' % res.text
           elif res.tag == 'failure':
-            result[tname]['reduction'] = case.grade_reduction
-            #m = self.Expr.search(res.text)
-            #if m:
-            #  reduc = m.groups()[0]
-            #  reduc = reduc.strip()
-            #  if reduc[-1] == '%':
-            #    reduc = float('.%s' % reduc[:-1])
-            #  else:
-            #    reduc = int(reduc)
-            result[tname]['success'] = False
+            result['reduction'] = case.grade_reduction
+            result['success'] = False
             try:
-              result[tname]['text'] += '%s\n' % case.hint
+              result['text'] += '%s\n' % case.hint
             except:
               pass
-            #m = self.Err.search(res.text)
-            #if m:
-            #  result[tname]['text'] += '%s\n' % m.groups()[0]
-            #else:
             err = res.text.replace('Test failed:', '')
-            result[tname]['text'] += 'Erro => %s\n' % err
+            result[text'] += 'Erro => %s\n' % err
     return result
 
   def compile(self):
