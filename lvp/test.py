@@ -73,9 +73,12 @@ class Case(Base):
   Kind = 'case'
 
   def __init__(self, name, attrs={}):
-    Base.__init__(self, name, {'info':'', 'timeout': 30, 'hint': '', 'parent':None, 'requisite':[None]})    
+    Base.__init__(self, name, {'info':'', 'timeout': 30, 'hint': '', 'parent':None, 'requisite':[]})    
     self.attrs.update(attrs)
     self.__check_dialogs__()
+
+  def __hash__(self):
+    return hash(self.name)
 
   def __check_dialogs__(self):
     d = {}
@@ -122,7 +125,7 @@ class Case(Base):
   def __repr__(self):
     desc=[]
     if self.parent: desc.append('parent=%s'%self.parent)
-    if None not in self.requisite: desc.append('requisite=%s'%self.requisite)
+    if self.requisite: desc.append('requisite=%s'%self.requisite)
     return '<case %s: %s>' % (self.name, ','.join(desc))
 
 class BasicTest(Base):
@@ -140,8 +143,8 @@ class BasicTest(Base):
     tab = {}
     for c in self.cases:    
       tab[c.name] = c
-    for c in self.cases:
-      if c.parent: c.parent = tab[c.parent]
+    #for c in self.cases:
+    #  if c.parent: c.parent = tab[c.parent]
 
   def __repr__(self):
 #    return 'TestSuite "%s": %s' % (self.name, self.attrs)

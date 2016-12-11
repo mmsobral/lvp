@@ -99,18 +99,20 @@ class Evaluator:
     except:
       self.result[key][attr]=''
 
-  def __getcases__(self, caselist, parent=None):
-    'get list of cases that have parent given by parameter parent'
-    return list(filter(lambda caso: caso.parent == parent, caselist))
+  def __getcases__(self, caseset, parent=None):
+    'get set of cases that have parent given by parameter parent'
+    #print(caseset)
+    return set(filter(lambda caso: caso.parent == parent, caseset))
 
-  def __getcases_req__(self, req=None):
-    'get list of cases that have requsite given by parameter req'
-    return list(filter(lambda caso: req in caso.requisite, self.cases))
+  def __getcases_req__(self, req=set()):
+    'get set of cases that have requsite given by parameter req'
+    r = set(filter(lambda caso: set(caso.requisite).issubset(req) and caso.name not in req and caso.parent == None, self.cases))
+    return r
 
   def __runcase__(self, caso, prog):
     'execute a specific case: this method must be overwritten by derived classes'
-    #print("--caso:%s, parent=%s:" % (caso.name, caso.parent))
-    result[caso.name] = {'success': False, 'info': caso.info, 'reduction': caso.grade_reduction}
+    print('--caso:', caso)
+    result = {'success': True, 'info': caso.info, 'reduction': 0}
     return result
 
   def __runcases__(self, prog):
@@ -118,7 +120,7 @@ class Evaluator:
     result = {}
     # get all cases with no requisites
     lcases = self.__getcases_req__()
-    cases = self.cases[:]  
+    casesok = set()
     # while there are cases to execute
     while lcases:
       # initiate list of parents
@@ -132,18 +134,21 @@ class Evaluator:
           for caso in self.__getcases__(lcases, parent):
             # run this specific case
             res = self.__runcase__(caso, prog)
-            result.update(res)
+            result[caso.name]=res
             # if case failed, add it to parent list, otherwise
             # extend case list with cases that has this case as requisite
-            if not res[case.name]['success']: lpar.append(caso.name)
-            else: lcases += self.__getcases_req__(caso.name)
+            if not res['success']: lpar.append(caso.name)
+            else:
+              casesok.add(caso.name)
+              lcases = lcases.union(self.__getcases_req__(casesok))
             # remove case from case list, since it was already executed
+            #print(lcases,'\n',cases)
             lcases.remove(caso)
-            cases.remove(caso)
         parents = lpar
-    for c in cases:
+    failed = filter(lambda x: x.name not in casesok and x.name not in result, self.cases)
+    for c in failed:
       if not c.parent:
-       result[c.name] = {'success':False, 'reduction':c.grade_reduction, 'info':c.info, 'hint': 'not executed because some of its requisites failed: '+','.join(c.requisite)}
+       result[c.name] = {'success':False, 'reduction':c.grade_reduction, 'info':c.info, 'text': 'not executed because some of its requisites failed: '+','.join(c.requisite)}
     return result
 
   def run(self,prog='./vpl_test'):
