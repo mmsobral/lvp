@@ -343,12 +343,11 @@ class VplParser:
 
   def p_caselist_decl1(self, p):
       r'''caselist : caseid VIRG caselist'''
-      p[3] = [p[1]] + p[3]
-      p[0] = p[3]
+      p[0] = [p[1]] + p[3]
 
   def p_caselist_decl2(self, p):
       r'''caselist : caseid'''
-      p[0] = p[1]
+      p[0] = [p[1]]
 
   def p_dialog_decl1(self, p):
       'dialog : DIALOG LBRACE commonlist RBRACE'

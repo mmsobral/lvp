@@ -120,7 +120,10 @@ class Case(Base):
     return self.name != caso.name
 
   def __repr__(self):
-    return '<case %s: parent=%s>' % (self.name, self.parent)
+    desc=[]
+    if self.parent: desc.append('parent=%s'%self.parent)
+    if None not in self.requisite: desc.append('requisite=%s'%self.requisite)
+    return '<case %s: %s>' % (self.name, ','.join(desc))
 
 class BasicTest(Base):
 
