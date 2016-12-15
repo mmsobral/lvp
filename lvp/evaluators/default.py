@@ -405,7 +405,7 @@ class DefaultEvaluator(Evaluator):
           #print("--caso:%s, parent=%s:" % (caso.name, caso.parent))
           succ = caso.run([prog], self.timeout)
           result[caso.name] = {'success': succ, 'info': caso.info, 'input':caso.data_sent,
-                           'output':caso.data_rcvd, 'expected': caso.expected}
+                           'output':caso.data_rcvd, 'expected': caso.expected, 'optional':caso.reduction == 0}
           if not succ:
             lpar.append(caso)
             #subres[caso.name] = caso.reduction

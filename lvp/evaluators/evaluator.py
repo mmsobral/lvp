@@ -33,7 +33,10 @@ class Evaluator:
     
   def grade(self, result=None):
     if not result: result = self.result
-    nres = len(result)
+    nres = 0
+    for item,val in result.items():
+      nres += not val['success'] and val['reduction'] > 0 or val['success']
+    #nres = len(result)
     if nres == 0: return 0
     def_reduction = float(self.gmax) / nres
     total = self.gmax
@@ -41,9 +44,10 @@ class Evaluator:
       #print(name, status, total)
       if not status['success']:
         r = status['reduction']
-        if r == 0:
-          total -= def_reduction
-        elif type(r) == type(1):
+        #if r == 0:
+        #  total -= def_reduction
+        #elif type(r) == type(1):
+        if type(r) == type(1):
           total -= r
         else:
           total -= self.gmax*r

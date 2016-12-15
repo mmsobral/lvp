@@ -82,7 +82,7 @@ class CxxEvaluator(Evaluator):
     result = {}
     for test in r:
       tname = test.attrib['name'][4:]
-      result[tname] = {'success': True, 'text': '', 'info':case.info}
+      result[tname] = {'success': True, 'text': '', 'info':case.info, 'optional': case.grade_reduction == 0}
       if test.tag == 'testcase':
         for res in test:
           if res.tag == 'trace':
