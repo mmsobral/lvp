@@ -27,6 +27,8 @@ class Result:
   def check(self, data):
     data = data.strip()
     m = self.expr.match(data)
+    #print('check: data=%s, m=%s, expr=%s'%(data, m, self.data))
+    #print(self.expr)
     if m:
       data = data[m.end()+1:]
       return data
@@ -102,6 +104,11 @@ class RegexResult(ExactResult):
   def __repr__(self):
     return '/%s/' % self.data
 
+  def __normalize__(self, data):
+    #data = map(re.escape, data.split())
+    data = r'\s+'.join(data.split())
+    return data
+
 class Reader:
   '''Reader: le e bufferiza chars de um arquivo'''
 
@@ -161,7 +168,7 @@ class Dialog:
     self.errpos = 0 
     if self.dial.output != None: self.expected = repr(self.dial.output)
     else: self.expected = ''
-    #print('run_dialog: tx=%s, rx=%s, timeout=%d' % (self.dial.input,self.expected, self.timeout))
+    #print('run_dialog: tx=%s, rx=%s, type=%s, timeout=%d' % (self.dial.input,self.expected, self.dial.output.__class__.__name__,self.timeout))
     if self.dial.input != None:
       inp = self.dial.input+'\n'
       self.sent += inp
@@ -405,7 +412,7 @@ class DefaultEvaluator(Evaluator):
           #print("--caso:%s, parent=%s:" % (caso.name, caso.parent))
           succ = caso.run([prog], self.timeout)
           result[caso.name] = {'success': succ, 'info': caso.info, 'input':caso.data_sent,
-                           'output':caso.data_rcvd, 'expected': caso.expected, 'optional':caso.reduction == 0}
+                           'output':caso.data_rcvd, 'expected': caso.expected}
           if not succ:
             lpar.append(caso)
             #subres[caso.name] = caso.reduction

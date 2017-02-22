@@ -98,7 +98,7 @@ class VplParser:
   tokens = (
     'COLON','LBRACE', 'RBRACE','EQUALS','NUMBER', 'VIRG',
     'LPAR','RPAR','PERC','STRING','REGEX','FLOATNUMBER',
-    'COMMENT','ID','PATHNAME', 'DIV', 'OUTPUTFILE')
+    'COMMENT','ID','PATHNAME', 'DIV', 'OUTPUTFILE', 'SPECIAL')
 
 
   def __init__(self, conf):
@@ -205,6 +205,10 @@ class VplParser:
     t.type = self.reserved.get(t.value,'ID')    # Check for reserved words
     return t
 
+
+  def t_SPECIAL(self, t):
+     r'[-+/^!%]'
+     return t
 
   def p_statement_comment(self, p):
     '''statement : COMMENT
@@ -427,7 +431,8 @@ class VplParser:
               | PERC
               | PATHNAME
               | STRING
-              | REGEX''' 
+              | REGEX
+	      | SPECIAL''' 
               #|	WORD
     p[0] = p[1]
 
