@@ -77,7 +77,7 @@ class VplParser:
   precedence = ()
   literals = ''
 
-  t_COLON  = r':'
+  #t_COLON  = r':'
   t_EQUALS  = r'='
   t_LBRACE  = r'\{'
   t_RBRACE  = r'\}'
@@ -96,7 +96,7 @@ class VplParser:
               'info':'INFO', 'parent':'PARENT'}
 
   tokens = (
-    'COLON','LBRACE', 'RBRACE','EQUALS','NUMBER', 'VIRG',
+    'LBRACE', 'RBRACE','EQUALS','NUMBER', 'VIRG',
     'LPAR','RPAR','PERC','STRING','REGEX','FLOATNUMBER',
     'COMMENT','ID','PATHNAME', 'DIV', 'OUTPUTFILE', 'SPECIAL')
 
@@ -189,6 +189,7 @@ class VplParser:
   def t_STRING(self, t):
     r'".*"'
     t.type = self.reserved.get(t.value,'STRING')    # Check for reserved words
+    t.value = t.value[1:-1]
     return t
 
   def t_FLOATNUMBER(self, t):
@@ -422,7 +423,6 @@ class VplParser:
     r'''multiid : ID
               | FLOATNUMBER
               | NUMBER
-              | COLON
               | EQUALS
               | VIRG
               | LPAR
