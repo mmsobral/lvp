@@ -1,6 +1,7 @@
 import sys,regex as re,subprocess,select
 from .evaluator import Evaluator
 import time
+import traceback
 
 class Result:
 
@@ -235,6 +236,9 @@ class Case:
     self.reduction = 0
     self.info = ''
 
+  def __hash__(self):
+    return hash(self.name)
+
   def __eq__(self, o):
     if o != None: return self.name == o.name
     return False
@@ -261,6 +265,7 @@ class Case:
         res = class_result(outp)
         break
       except Exception as e:
+        #print('exc:', e, outp, 'tipo=%s'%type(outp))
         pass
     if not res:
       raise ValueError("invalid output: %s" % outp)
@@ -388,6 +393,8 @@ class DefaultEvaluator(Evaluator):
   def __loadcase__(self, c):
     caso = Case(c.name)
     caso.add_dialogs(c.dialogs)
+    caso.requisite = c.requisite
+    caso.parent = c.parent
     try:
       caso.set_reduction(c.grade_reduction)
     except:
@@ -395,9 +402,9 @@ class DefaultEvaluator(Evaluator):
     caso.set_info(c.info)
     return caso
 
-  def __runcase__(self, case, prog):
+  def __runcase__(self, caso, prog):
     result = {}
-    caso = self.__loadcase__(case)
+    #caso = self.__loadcase__(case)
     succ = caso.run([prog], self.timeout)
     result = {'success': succ, 'info': caso.info, 'input':caso.data_sent,
                            'output':caso.data_rcvd, 'expected': caso.expected}
