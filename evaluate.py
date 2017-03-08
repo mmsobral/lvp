@@ -26,23 +26,6 @@ class Aggregator(Evaluator):
       module = importlib.import_module(name)
     return module
 
-  def __run_test0__(self, test):
-    try:
-      module = self.__load_module__(test.type)
-      test.generate()
-      #runner = module.init(test, timeout=Timeout)
-      runner = module.init(test)
-      runner.compile()
-      runner.evaluate()
-      return runner
-    except ImportError:
-      #traceback.print_exc()
-      return None
-    except Exception as e:
-      print(e)
-      traceback.print_exc()
-      return None
-
   def __run_test__(self, test):
       module = self.__load_module__(test.type)
       test.generate()

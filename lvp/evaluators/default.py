@@ -234,14 +234,10 @@ class Case:
     self.curr_dialog = 0
     self.reduction = 0
     self.info = ''
-    self.parent = None
 
   def __eq__(self, o):
     if o != None: return self.name == o.name
     return False
-
-  def set_parent(self, par):
-    self.parent = par
 
   def set_reduction(self, reduc):
     if type(reduc) == type(int):
@@ -386,43 +382,29 @@ class DefaultEvaluator(Evaluator):
   def __load__(self, cases):
     r = []
     for c in cases:
-      caso = Case(c.name)
-      caso.add_dialogs(c.dialogs)
-      try:
-        caso.set_reduction(c.grade_reduction)
-      except:
-        pass
-      caso.set_info(c.info)
-      caso.set_parent(c.parent)
-      r.append(caso)
+      r.append(self.__loadcase__(c))
     return r
 
-  def __getcases__(self, parent=None):
-    return filter(lambda caso: caso.parent == parent, self.cases)
+  def __loadcase__(self, c):
+    caso = Case(c.name)
+    caso.add_dialogs(c.dialogs)
+    try:
+      caso.set_reduction(c.grade_reduction)
+    except:
+      pass
+    caso.set_info(c.info)
+    return caso
 
-  def __run__(self, prog):
+  def __runcase__(self, case, prog):
     result = {}
-    #subres = {}
-    parents = [None]
-    while parents:
-      lpar = []
-      for parent in parents:
-        #print("parent:", parent)
-        for caso in self.__getcases__(parent):
-          #print("--caso:%s, parent=%s:" % (caso.name, caso.parent))
-          succ = caso.run([prog], self.timeout)
-          result[caso.name] = {'success': succ, 'info': caso.info, 'input':caso.data_sent,
+    caso = self.__loadcase__(case)
+    succ = caso.run([prog], self.timeout)
+    result = {'success': succ, 'info': caso.info, 'input':caso.data_sent,
                            'output':caso.data_rcvd, 'expected': caso.expected}
-          if not succ:
-            lpar.append(caso)
-            #subres[caso.name] = caso.reduction
-            result[caso.name]['text'] = caso.get_hint_data()
-            result[caso.name]['reduction'] = caso.reduction
-            result[caso.name]['errpos'] = caso.errpos
-          #elif caso.parent: subres[caso.parent.name] -= caso.reduction
-      parents = lpar
-    #for name in subres:
-    #  result[name]['reduction'] = min(subres[name], 0)
+    if not succ:
+      result['text'] = caso.get_hint_data()
+      result['reduction'] = caso.reduction
+      result['errpos'] = caso.errpos
     return result
 
 #####################################################
