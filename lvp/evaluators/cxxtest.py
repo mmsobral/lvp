@@ -65,7 +65,7 @@ class CxxEvaluator(Evaluator):
         t2 = time.time()
         result = {'success': False, 'reduction': case.grade_reduction, 'info':case.info}
         if t2-t1 >= test_timeout:
-           result[text'] = 'Timeout !'
+           result['text'] = 'Timeout !'
         else:
            result['text'] = 'Algum erro fatal: ' + r
           
@@ -89,7 +89,7 @@ class CxxEvaluator(Evaluator):
             except:
               pass
             err = res.text.replace('Test failed:', '')
-            result[text'] += 'Erro => %s\n' % err
+            result['text'] += 'Erro => %s\n' % err
     return result
 
   def compile(self):
