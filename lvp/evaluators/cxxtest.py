@@ -2,6 +2,7 @@ import subprocess,re
 from .evaluator import Evaluator
 import xml.etree.ElementTree as ET
 import time
+import traceback
 
 class CxxEvaluator(Evaluator):
 
@@ -47,7 +48,7 @@ class CxxEvaluator(Evaluator):
     else: prog = [prog]
     result = {}
     if not case.name in self.__list_tests__(prog): return result
-    program = prog + [self.name, 'test%s' % test]
+    program = prog + [self.name, 'test%s' % case.name]
     global_timeout = self.timeout
     if case.timeout > 0 and case.timeout < self.timeout:
       self.timeout = case.timeout
@@ -62,6 +63,7 @@ class CxxEvaluator(Evaluator):
       else:
         raise Exception()
     except Exception as e:
+        print('===', e, traceback.format_exc())
         t2 = time.time()
         result = {'success': False, 'reduction': case.grade_reduction, 'info':case.info}
         if t2-t1 >= test_timeout:
@@ -73,12 +75,12 @@ class CxxEvaluator(Evaluator):
 
   def __check_output__(self, data, case):
     r = ET.fromstring(data)
-    result = {}
+    result = {'success': True, 'text': '', 'info':case.info, 'optional': case.grade_reduction == 0}
     for test in r:
-      tname = test.attrib['name'][4:]
-      result[tname] = {'success': True, 'text': '', 'info':case.info, 'optional': case.grade_reduction == 0}
       if test.tag == 'testcase':
+        
         for res in test:
+          #print('====>>', res, res.tag, res.items(), dir(res))
           if res.tag == 'trace':
             result['text'] += '%s\n' % res.text
           elif res.tag == 'failure':
@@ -90,6 +92,32 @@ class CxxEvaluator(Evaluator):
               pass
             err = res.text.replace('Test failed:', '')
             result['text'] += 'Erro => %s\n' % err
+      #print('====', result['text'])
+    return result
+
+  def __check_output0__(self, data, case):
+    r = ET.fromstring(data)
+    result = {}
+    for test in r:
+      tname = test.attrib['name'][4:]
+      result = {'success': True, 'text': '', 'info':case.info, 'optional': case.grade_reduction == 0}
+      #results[tname] = result
+      if test.tag == 'testcase':
+        
+        for res in test:
+          #print('====>>', res, res.tag, res.items(), dir(res))
+          if res.tag == 'trace':
+            result['text'] += '%s\n' % res.text
+          elif res.tag == 'failure':
+            result['reduction'] = case.grade_reduction
+            result['success'] = False
+            try:
+              result['text'] += '%s\n' % case.hint
+            except:
+              pass
+            err = res.text.replace('Test failed:', '')
+            result['text'] += 'Erro => %s\n' % err
+      #print('====', result['text'])
     return result
 
   def compile(self):
