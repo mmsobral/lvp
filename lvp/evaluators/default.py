@@ -125,11 +125,20 @@ class AnyRegexResult(ExactResult):
   def __normalize__(self, data):
     #data = map(re.escape, data.split())
     self.orig = data
+    # possibilita virgulas dentro dos dados, mas com escape
+    # nesse caso, deve-se precede-las com \
+    # aqui se substitui a sequencia \, por  chr(0)
+    data = data.replace(r'\,', chr(0))
     data = r'\s+'.join(data.split())
     data = data.split(',')
     r = list(map(lambda x: '(?=(^|.*?\s+)%s)'%x, data[:-1]))
-    r.append('(^|.*?\s+)%s' % data[-1]) 
-    return ''.join(r)
+    r.append('(^|.*?\s+)%s' % data[-1])
+    # revertem-se os chr(0) para simples ,
+    res = ''
+    for x in r:
+      if chr(0) in x: res.append(x.replace(chr(0), ','))
+      else: res += x 
+    return res
 
 class Reader:
   '''Reader: le e bufferiza chars de um arquivo'''
