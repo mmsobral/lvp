@@ -97,7 +97,7 @@ class VplParser:
 
   tokens = (
     'LBRACE', 'RBRACE','EQUALS','NUMBER', 'VIRG',
-    'LPAR','RPAR','PERC','STRING','REGEX','FLOATNUMBER',
+    'LPAR','RPAR','PERC','STRING','REGEX','ANYREGEX','FLOATNUMBER',
     'COMMENT','ID','PATHNAME', 'DIV', 'OUTPUTFILE', 'SPECIAL')
 
 
@@ -172,8 +172,13 @@ class VplParser:
     return r
 
   def t_REGEX(self, t):
-    r'/.*/\s+'
-    t.type = self.reserved.get(t.value,'REGEX')    # Check for reserved words
+    r'/.*/\s*'
+    #t.type = self.reserved.get(t.value,'REGEX')    # Check for reserved words
+    return t
+
+  def t_ANYREGEX(self, t):
+    r'\|.*\|\s*'
+    #t.type = self.reserved.get(t.value,'ANYREGEX')    # Check for reserved words
     return t
 
   def t_OUTPUTFILE(self, t):
@@ -444,6 +449,7 @@ class VplParser:
               | PATHNAME
               | STRING
               | REGEX
+              | ANYREGEX
 	      | SPECIAL''' 
               #|	WORD
     p[0] = p[1]

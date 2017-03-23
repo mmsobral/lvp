@@ -99,7 +99,7 @@ class RegexResult(ExactResult):
   #Expr = re.compile(r'^[\t ]*/(.*?)/\s*$', re.S)
 
   def __get__(self, data):
-    return re.compile('^[\t\n ]*(%s)$' % data, re.M | re.S)
+    return re.compile('^[\t\n ]*(%s)' % data, re.M | re.S)
     #return re.compile('^[\t\n ]*(%s)' % data, re.S)
 
   def __repr__(self):
@@ -109,6 +109,27 @@ class RegexResult(ExactResult):
     #data = map(re.escape, data.split())
     data = r'\s+'.join(data.split())
     return data
+
+class AnyRegexResult(ExactResult):
+
+  Expr = re.compile(r'^[\t ]*\|(.*?)\|\s*$', re.M|re.S)
+  #Expr = re.compile(r'^[\t ]*/(.*?)/\s*$', re.S)
+
+  def __get__(self, data):
+    return re.compile('^[\t\n ]*(%s)' % data, re.M | re.S)
+    #return re.compile('^[\t\n ]*(%s)' % data, re.S)
+
+  def __repr__(self):
+    return '|%s|' % self.orig
+
+  def __normalize__(self, data):
+    #data = map(re.escape, data.split())
+    self.orig = data
+    data = r'\s+'.join(data.split())
+    data = data.split(',')
+    r = list(map(lambda x: '(?=(^|.*?\s+)%s)'%x, data[:-1]))
+    r.append('(^|.*?\s+)%s' % data[-1]) 
+    return ''.join(r)
 
 class Reader:
   '''Reader: le e bufferiza chars de um arquivo'''
@@ -150,7 +171,7 @@ class Dialog:
 
   def __check_output__(self, data):
     outp = self.dial.output
-    #print('check_output:', type(outp))
+    print('check_output:', type(outp))
     if outp:
       resto = outp.check(data)
     else:
@@ -170,6 +191,7 @@ class Dialog:
     if self.dial.output != None: self.expected = repr(self.dial.output)
     else: self.expected = ''
     #print('run_dialog: tx=%s, rx=%s, type=%s, timeout=%d' % (self.dial.input,self.expected, self.dial.output.__class__.__name__,self.timeout))
+    #return False
     if self.dial.input != None:
       inp = self.dial.input+'\n'
       self.sent += inp
@@ -226,7 +248,7 @@ class Dialog:
 
 class Case:
 
-  ResultList = [ExactResult, IntResult, FloatResult, RegexResult, Result]
+  ResultList = [ExactResult, IntResult, FloatResult, RegexResult, AnyRegexResult, Result]
   MaxLine = 10240
 
   def __init__(self, name):
