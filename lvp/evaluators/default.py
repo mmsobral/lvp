@@ -180,7 +180,7 @@ class Dialog:
 
   def __check_output__(self, data):
     outp = self.dial.output
-    print('check_output:', type(outp))
+    #print('check_output:', type(outp), outp)
     if outp:
       resto = outp.check(data)
     else:
@@ -436,6 +436,7 @@ class DefaultEvaluator(Evaluator):
   def __runcase__(self, caso, prog):
     result = {}
     #caso = self.__loadcase__(case)
+    print('===', caso.name)
     succ = caso.run([prog], self.timeout)
     result = {'success': succ, 'info': caso.info, 'input':caso.data_sent,
                            'output':caso.data_rcvd, 'expected': caso.expected}

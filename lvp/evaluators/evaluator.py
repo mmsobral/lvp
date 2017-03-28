@@ -69,7 +69,7 @@ class Evaluator:
     p = subprocess.Popen(prog, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
       out,err = p.communicate('',10)
-    except subprocess.TimeoutException:
+    except subprocess.TimeoutExpired:
       p.kill()
       print('<|--\n- timeout\n--|>')
       return 1
@@ -110,7 +110,17 @@ class Evaluator:
 
   def __getcases_req__(self, req=set()):
     'get set of cases that have requsite given by parameter req'
-    r = set(filter(lambda caso: set(caso.requisite).issubset(req) and caso.name not in req and caso.parent == None, self.cases))
+    r = set()
+    for c in self.cases:
+      # if case has requisite but req is empty, or vice-versa
+      # ignore case
+      creq = len(c.requisite) > 0
+      areq = len(req) > 0
+      if creq ^ areq: continue
+
+      if not set(c.requisite).issubset(req): continue
+      if c.name not in req and c.parent == None: r.add(c)
+    #r = set(filter(lambda caso: set(caso.requisite).issubset(req) and caso.name not in req and caso.parent == None, self.cases))
     return r
 
   def __runcase__(self, caso, prog):
@@ -132,10 +142,11 @@ class Evaluator:
       # while there are parents that failed to execute
       while parents:
         lpar = []
+        #print("parents:", parents, lpar, len(lcases))
         for parent in parents:
-          #print("parent:", parent)
           # for each case that depends on failure of a parent
           for caso in self.__getcases__(lcases, parent):
+            print('---',caso.name,caso.requisite)
             # run this specific case
             res = self.__runcase__(caso, prog)
             result[caso.name]=res
@@ -144,7 +155,9 @@ class Evaluator:
             if not res['success']: lpar.append(caso.name)
             else:
               casesok.add(caso.name)
+              #print('+++', len(lcases), caso.name)
               lcases = lcases.union(self.__getcases_req__(casesok))
+              #print('+++', len(lcases))
             # remove case from case list, since it was already executed
             #print(lcases,'\n',cases)
             lcases.remove(caso)
