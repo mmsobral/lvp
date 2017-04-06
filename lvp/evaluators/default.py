@@ -401,7 +401,7 @@ class DefaultEvaluator(Evaluator):
       try:
         arqs = self.test.files
       except AttributeError:
-        arqs = self.__find_files__(['.cpp','.cc','.C'])
+        arqs = self.__find_files__(['.cpp','.cc','.C', '.c'])
       #print(arqs)
       prog = ['g++', '-std=c++11', '-o', 'vpl_test', '-I.']
       prog += arqs
