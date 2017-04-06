@@ -93,6 +93,15 @@ class FloatResult(IntResult):
   #Expr = re.compile('^[\t ]*(([-+0-9.]+[ \n\t]*)+)$')
   Expr = re.compile(r'^[ ]*([-+]?\d*[.]+\d+[ ]*)$')
 
+  def __get__(self, data):
+    r = data.strip()
+    if r.find('.'):
+      r = '%s0*' % r
+    if r.find('0.') == 0 or r.find('.') == 0:
+      if r[0] == '0': r = r[1:]
+      r = '(0|)%s' % r 
+    return Result.__get__(self, r)
+
 class RegexResult(ExactResult):
 
   Expr = re.compile(r'^[\t ]*/(.*?)/\s*$', re.M|re.S)
