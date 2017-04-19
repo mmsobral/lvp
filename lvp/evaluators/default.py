@@ -2,6 +2,7 @@ import sys,regex as re,subprocess,select
 from .evaluator import Evaluator
 import time
 import traceback
+import selector
 
 class Result:
 
@@ -410,12 +411,10 @@ class DefaultEvaluator(Evaluator):
       try:
         arqs = self.test.files
       except AttributeError:
-        arqs = self.__find_files__(['.cpp','.cc','.C', '.c'])
-      #print(arqs)
-      prog = ['g++', '-std=c++11', '-o', 'vpl_test', '-I.']
-      prog += arqs
-      prog.append('-lm')
-      prog.append('-lutil')
+        arqs = []
+      sf = selector.SelectorFactory()
+      gen = sf.get_selector(arqs)
+      prog = gen.get_command()
     #status = subprocess.call(prog)
     status = self.__exec__(prog)
     self.status = (status == 0)
