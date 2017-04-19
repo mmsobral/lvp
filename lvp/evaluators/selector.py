@@ -45,7 +45,7 @@ class Selector:
 class CppSelector(Selector):
 
   Ext = ['.cpp','.cc','.CC','.C']
-  Prog = ['g++','-std=c++11','-I.', '-lm','-lutil', '-o', 'vpltest']
+  Prog = ['g++','-std=c++11','-I.', '-lm','-lutil', '-o', 'vpl_test']
 
 class PySelector(Selector):
 
@@ -60,10 +60,10 @@ class PySelector(Selector):
       self.arqs = [self.Default]
       
   def get_command(self):
-    f = open('vpltest','w')
+    f = open('vpl_test','w')
     f.write('#!/bin/bash\n\npython3 %s\n' % ' '.join(self.arqs))
     f.close()
-    os.chmod('vpltest', stat.S_IROTH|stat.S_IRGRP|stat.S_IRUSR|stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH)
+    os.chmod('vpl_test', stat.S_IROTH|stat.S_IRGRP|stat.S_IRUSR|stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH)
     return ['/bin/true']
 
 

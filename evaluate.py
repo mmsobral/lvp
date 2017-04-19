@@ -57,6 +57,7 @@ class Aggregator(Evaluator):
     self.grade = 0
     self.result = {}
     for test in suites:
+      #print(test)
       res = self.__run_test__(test)
       if not res: raise ValueError('test %s cannot be applied !' % test.type)
       self.grade += test.weight*res.grade()/total

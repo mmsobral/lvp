@@ -2,7 +2,7 @@ import sys,regex as re,subprocess,select
 from .evaluator import Evaluator
 import time
 import traceback
-import selector
+from .selector import SelectorFactory
 
 class Result:
 
@@ -412,9 +412,10 @@ class DefaultEvaluator(Evaluator):
         arqs = self.test.files
       except AttributeError:
         arqs = []
-      sf = selector.SelectorFactory()
+      sf = SelectorFactory()
       gen = sf.get_selector(arqs)
       prog = gen.get_command()
+    print(prog)
     #status = subprocess.call(prog)
     status = self.__exec__(prog)
     self.status = (status == 0)
@@ -456,6 +457,7 @@ class DefaultEvaluator(Evaluator):
 
 #####################################################
 def init(test, **args):
+  #print('default init')
   fac = DefaultEvaluator(test, **args)
   return fac
 
