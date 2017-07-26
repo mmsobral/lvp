@@ -276,6 +276,7 @@ class Case:
     self.curr_dialog = 0
     self.reduction = 0
     self.info = ''
+    self.args = []
 
   def __hash__(self):
     return hash(self.name)
@@ -284,6 +285,9 @@ class Case:
     if o != None: return self.name == o.name
     return False
 
+  def set_args(self, arg):
+    self.args = arg.split('\n')
+    
   def set_reduction(self, reduc):
     if type(reduc) == type(int):
       if reduc > 100 or reduc < 0: return
@@ -358,6 +362,7 @@ class Case:
     return r
 
   def run(self, prog, timeout):
+    prog += self.args
     proc = subprocess.Popen(prog, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     self.curr_dialog = 0
     ok = True
@@ -437,6 +442,10 @@ class DefaultEvaluator(Evaluator):
     caso.parent = c.parent
     try:
       caso.set_reduction(c.grade_reduction)
+    except:
+      pass
+    try:
+      caso.set_args(c.arg)
     except:
       pass
     caso.set_info(c.info)

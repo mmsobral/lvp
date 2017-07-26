@@ -93,7 +93,8 @@ class VplParser:
   reserved = {'test': 'TEST', 'case': 'CASE', 'grade_reduction':'GRADERED', 	      'files':'FILES', 'weight':'WEIGHT', 'input':'INPUT','output':'OUTPUT',
 	      'hint':'HINT', 'generator':'GENERATOR', 'type':'TYPE',
               'dialog':'DIALOG','build':'BUILD', 'timeout':'TIMEOUT',
-              'info':'INFO', 'parent':'PARENT','requisite':'REQUISITE'}
+              'info':'INFO', 'parent':'PARENT','requisite':'REQUISITE',
+              'arg':'ARG'}
 
   tokens = (
     'LBRACE', 'RBRACE','EQUALS','NUMBER', 'VIRG',
@@ -351,6 +352,10 @@ class VplParser:
       r'''attr : REQUISITE EQUALS caselist'''
       p[0] = {p[1]: p[3]}
 
+  #def p_attr_decl6(self, p):
+  #    r'''attr : ARG EQUALS multiid'''
+  #    p[0] = {p[1]: p[3]}
+
   def p_caselist_decl1(self, p):
       r'''caselist : caseid VIRG caselist'''
       p[0] = [p[1]] + p[3]
@@ -398,7 +403,8 @@ class VplParser:
   def p_common_decl1(self, p):
       '''common : INPUT
                 | HINT
-                | INFO'''
+                | INFO
+                | ARG'''
       p[0] = p[1]
 
   def p_pathlist_decl1(self, p):
