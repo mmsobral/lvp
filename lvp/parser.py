@@ -368,6 +368,10 @@ class VplParser:
       'dialog : DIALOG LBRACE commonlist RBRACE'
       p[0] = Dialog(p[3])
 
+  def p_dialog_decl2(self, p):
+      'dialog : DIALOG LBRACE RBRACE'
+      p[0] = Dialog({})
+
   def p_commonlist_decl1(self, p):
       'commonlist : commonattr commonlist'
       try:
@@ -399,6 +403,10 @@ class VplParser:
   def p_commonattr_decl5(self, p):
       '''commonattr : TIMEOUT EQUALS NUMBER'''
       p[0] = (p[1], int(p[3]))
+
+  def p_commonattr_decl6(self, p):
+      'commonattr : OUTPUT EQUALS'
+      p[0] = (p[1], '')
 
   def p_common_decl1(self, p):
       '''common : INPUT

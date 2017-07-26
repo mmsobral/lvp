@@ -207,7 +207,7 @@ class Dialog:
     self.sent = ''
     self.rcvd = ''
     self.errpos = 0 
-    if self.dial.output != None: self.expected = repr(self.dial.output)
+    if self.dial.output != None: self.expected = str(self.dial.output)
     else: self.expected = ''
     #print('run_dialog: tx=%s, rx=%s, type=%s, timeout=%d' % (self.dial.input,self.expected, self.dial.output.__class__.__name__,self.timeout))
     #return False
