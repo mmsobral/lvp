@@ -57,7 +57,6 @@ class Aggregator(Evaluator):
     self.grade = 0
     self.result = {}
     for test in suites:
-      #print(test)
       res = self.__run_test__(test)
       if not res: raise ValueError('test %s cannot be applied !' % test.type)
       self.grade += test.weight*res.grade()/total
@@ -66,6 +65,7 @@ class Aggregator(Evaluator):
 
   def error_report(self, e):
     r = '<|--\n- Erro: %s\n\n' % str(e) 
+    r += traceback.format_exc()
     r += '\n--|>\n'
     return r
 
@@ -74,7 +74,8 @@ class Aggregator(Evaluator):
     for test,res in self.result.items():
       result[test] = {'grade': res.grade()}
       result[test]['cases'] = res.get_result()
-    result = json.dumps(result)
+    result = json.dumps(result, ensure_ascii=False)
+    #result = result.replace('\\',r'\\')
     result = '<|--\n%s\n--|>\nGrade :=>> %.2f\n' % (result, self.grade)
     return result
     for test,res in self.result.items():

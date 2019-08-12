@@ -189,7 +189,9 @@ class Evaluator:
     return self.result
 
   def report(self):
-    res= json.dumps(self.result)
+    #res = self.result.encode('utf8')
+    
+    res= json.dumps(repr(self.result))
     return res
     r = ''
     for caso,status in self.result.items():
